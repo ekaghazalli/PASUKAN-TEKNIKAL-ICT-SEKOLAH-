@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="ms" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PROJEK SEWAAN SEKOLAH KUANTAN - CONSOLE DASHBOARD</title>
+  
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Premium Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"Share Tech Mono"', 'monospace'],
+            orbitron: ['"Orbitron"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      /* Neumorphic / Skeuomorphic Light Theme */
+      --bg-base: #f1f5f9;
+      --panel-bg: #e2e8f0;
+      --shadow-dark: #cbd5e1;
+      --shadow-light: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --border-highlight: rgba(255, 255, 255, 0.9);
+      --led-bg: #0f172a;
+      --panel-inset: inset 3px 3px 6px #cbd5e1, inset -3px -3px 6px #ffffff;
+      --panel-outset: 8px 8px 16px #cbd5e1, -8px -8px 16px #ffffff;
+      --panel-outset-sm: 4px 4px 8px #cbd5e1, -4px -4px 8px #ffffff;
+    }
+
+    .dark {
+      /* Premium Dark Tactical/Carbon Theme */
+      --bg-base: #0a0d12;
+      --panel-bg: #151a21;
+      --shadow-dark: #05070a;
+      --shadow-light: #212833;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-highlight: rgba(255, 255, 255, 0.04);
+      --led-bg: #07090d;
+      --panel-inset: inset 4px 4px 10px #05070a, inset -4px -4px 10px #212833;
+      --panel-outset: 10px 10px 20px #05070a, -10px -10px 20px #212833;
+      --panel-outset-sm: 5px 5px 10px #05070a, -5px -5px 10px #212833;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      background-image: 
+        radial-gradient(var(--border-highlight) 1.5px, transparent 0),
+        radial-gradient(var(--border-highlight) 1.5px, transparent 0);
+      background-size: 28px 28px;
+      background-position: 0 0, 14px 14px;
+    }
+
+    /* Skeuomorphic tactile panels */
+    .skeuo-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-highlight);
+      box-shadow: var(--panel-outset);
+      border-radius: 20px;
+      position: relative;
+    }
+
+    .skeuo-panel-inset {
+      background: var(--panel-bg);
+      box-shadow: var(--panel-inset);
+      border-radius: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+    }
+
+    /* Metal Screws for realistic hardware look */
+    .skeuo-screw {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #94a3b8 0%, #475569 100%);
+      box-shadow: inset 1px 1px 2px rgba(255,255,255,0.4), 1px 1px 2px rgba(0,0,0,0.4);
+      border: 0.5px solid #1e293b;
+    }
+    .skeuo-screw::after {
+      content: '';
+      position: absolute;
+      top: 5px;
+      left: 1px;
+      width: 10px;
+      height: 1.5px;
+      background-color: #334155;
+      transform: rotate(45deg);
+    }
+
+    /* CRT/LED Monitor style screen */
+    .led-screen {
+      background-color: var(--led-bg);
+      border: 3px solid rgba(148, 163, 184, 0.15);
+      box-shadow: inset 0px 4px 12px rgba(0, 0, 0, 0.95);
+      position: relative;
+      overflow: hidden;
+    }
+    .led-screen::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.04));
+      background-size: 100% 3px, 5px 100%;
+      z-index: 10;
+      pointer-events: none;
+      opacity: 0.45;
+    }
+    
+    /* Glossy reflection on glass panels */
+    .glass-glare {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 200%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 40%);
+      transform: skewX(-30deg);
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    /* Tactile push buttons */
+    .skeuo-btn {
+      background: linear-gradient(135deg, var(--panel-bg) 0%, rgba(255,255,255,0.06) 100%);
+      box-shadow: var(--panel-outset-sm);
+      border: 1px solid var(--border-highlight);
+      border-radius: 10px;
+      transition: all 0.1s cubic-bezier(0.25, 0.8, 0.25, 1);
+      user-select: none;
+    }
+    .skeuo-btn:active, .skeuo-btn.active {
+      box-shadow: var(--panel-inset);
+      transform: translateY(1.5px);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--led-bg);
+      box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.5);
+      border-radius: 6px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border: 2px solid var(--led-bg);
+      border-radius: 6px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* Flashing hardware notification indicator */
+    @keyframes alert-blink {
+      0%, 100% { opacity: 0.25; }
+      50% { opacity: 1; }
+    }
+    .status-blink {
+      animation: alert-blink 1.8s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="p-3 md:p-6 min-h-screen flex flex-col justify-between">
+
+  <!-- CORS / FALLBACK WARNING BANNER -->
+  <div id="fallback-warning" class="hidden skeuo-panel bg-amber-600/15 border-amber-500/50 p-4 mb-6 rounded-2xl relative z-20 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-3.5">
+      <div class="w-10 h-10 rounded-lg skeuo-panel-inset flex items-center justify-center text-amber-500 bg-amber-950/20">
+        <i class="fa-solid fa-triangle-exclamation text-xl status-blink"></i>
+      </div>
+      <div>
+        <h4 class="text-xs font-bold font-mono tracking-wide text-amber-400 uppercase">MOD SIMULASI AKTIF (SEKATAN PELAYAR)</h4>
+        <p class="text-[11px] text-slate-400 mt-0.5">Permintaan terus ke Google Sheet disekat oleh pelayar (CORS/Iframe Sandbox). Gunakan <b>Port Import Manual</b> untuk memaparkan data sebenar anda.</p>
+      </div>
+    </div>
+    <button onclick="openImportModal()" class="skeuo-btn px-4 py-2.5 bg-amber-500 text-slate-950 text-xs font-black font-mono tracking-widest uppercase hover:bg-amber-400">
+      <i class="fa-solid fa-file-import mr-1.5"></i> Masukkan Data Manual
+    </button>
+  </div>
+
+  <!-- HEADER HEADER CONSOLE -->
+  <header class="skeuo-panel mb-6 p-5 md:p-6 relative">
+    <!-- Corner Hardware Screws -->
+    <div class="skeuo-screw top-2 left-2"></div>
+    <div class="skeuo-screw top-2 right-2"></div>
+    <div class="skeuo-screw bottom-2 left-2"></div>
+    <div class="skeuo-screw bottom-2 right-2"></div>
+    <div class="glass-glare"></div>
+
+    <div class="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
+      
+      <!-- Logo brand header -->
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-xl skeuo-panel-inset flex items-center justify-center text-indigo-500">
+          <i class="fa-solid fa-server text-3xl"></i>
+        </div>
+        <div>
+          <div class="text-[10px] uppercase font-bold tracking-widest text-slate-500 font-mono">Konsol Pusat Analitik</div>
+          <h1 class="text-2xl md:text-3xl font-black tracking-tight font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+            PROJEK SEWAAN SEKOLAH KUANTAN
+          </h1>
+          <p class="text-xs font-mono text-slate-400 mt-0.5 uppercase tracking-wide">Sistem Pengurusan Alokasi Peranti & PTIS Seliaan</p>
+        </div>
+      </div>
+
+      <!-- Real-time Status / Control Board -->
+      <div class="flex flex-wrap items-center gap-3">
+        
+        <!-- Live System Readout -->
+        <div class="led-screen text-emerald-400 font-mono text-xs px-4 py-2.5 rounded-lg flex items-center gap-3">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" id="status-led"></span>
+          </span>
+          <div>
+            <div class="text-[9px] uppercase text-slate-500 leading-none mb-0.5">HUBUNGAN DATA</div>
+            <div id="status-text" class="font-bold uppercase">MENGHUBUNGKAN...</div>
+          </div>
+        </div>
+
+        <!-- Clock Screen -->
+        <div class="led-screen text-amber-500 font-mono text-xs px-4 py-2.5 rounded-lg hidden sm:flex items-center gap-2">
+          <i class="fa-solid fa-clock text-amber-500 status-blink text-sm"></i>
+          <div>
+            <div class="text-[9px] uppercase text-slate-500 leading-none mb-0.5">MASA TEMPATAN</div>
+            <div id="live-clock" class="font-bold tracking-wider">10:00:00 AM</div>
+          </div>
+        </div>
+
+        <!-- System hardware switches -->
+        <div class="flex items-center gap-1.5 skeuo-panel-inset p-1.5 rounded-xl">
+          <!-- Manual Import drive -->
+          <button onclick="openImportModal()" class="skeuo-btn px-3 py-2 text-xs font-bold flex items-center gap-1.5 text-emerald-400" title="Manual Import Port">
+            <i class="fa-solid fa-file-import"></i> <span class="hidden md:inline text-[10px]">IMPORT</span>
+          </button>
+
+          <!-- Diagnostic toggle button -->
+          <button onclick="openDiagnosticModal()" class="skeuo-btn px-3 py-2 text-xs font-bold flex items-center gap-1.5 text-indigo-400" title="Peta Diagnostik Lajur">
+            <i class="fa-solid fa-gauge-high"></i> <span class="hidden md:inline text-[10px]">DIAGNOSTIK</span>
+          </button>
+
+          <!-- Sound toggles -->
+          <button id="sound-toggle" onclick="toggleSound()" class="skeuo-btn px-3 py-2 text-xs font-bold flex items-center gap-1.5 text-slate-400 active" title="Toggel Bunyi Fizikal">
+            <i class="fa-solid fa-volume-high text-indigo-500" id="sound-icon"></i> <span class="hidden md:inline text-[10px]">SOUND</span>
+          </button>
+          
+          <!-- Light/Dark Mode Toggle -->
+          <button id="theme-toggle" onclick="toggleTheme()" class="skeuo-btn px-3 py-2 text-xs font-bold flex items-center gap-1.5 text-slate-400" title="Suis Cahaya/Malam">
+            <i class="fa-solid fa-lightbulb text-amber-500"></i> <span class="hidden md:inline text-[10px]">TEMA</span>
+          </button>
+
+          <!-- Refresh Data -->
+          <button onclick="fetchSheetData()" class="skeuo-btn px-3 py-2 text-xs font-bold flex items-center gap-1.5 text-pink-500" title="Segar Semula Lembaran Google">
+            <i class="fa-solid fa-rotate"></i> <span class="hidden md:inline text-[10px]">SYNC</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN BENTO GRID LAYOUT -->
+  <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 flex-grow mb-6">
+
+    <!-- BENTO 1: PANEL KAWALAN UTAMA (FILTERS) -->
+    <section class="skeuo-panel p-5 lg:row-span-2 relative flex flex-col justify-between">
+      <div class="skeuo-screw top-2 left-2"></div>
+      <div class="skeuo-screw top-2 right-2"></div>
+      <div class="skeuo-screw bottom-2 left-2"></div>
+      <div class="skeuo-screw bottom-2 right-2"></div>
+      <div class="glass-glare"></div>
+
+      <div class="relative z-10">
+        <div class="flex items-center justify-between border-b border-slate-700/50 pb-3 mb-4">
+          <h2 class="text-xs font-bold font-mono tracking-wider text-slate-400 uppercase flex items-center gap-2">
+            <i class="fa-solid fa-sliders text-indigo-500"></i> Panel Penapis
+          </h2>
+          <span class="w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span>
+        </div>
+
+        <!-- Filter 1: PENGURUSAN DAN PENTADBIRAN -->
+        <div class="mb-4">
+          <label class="block text-[10px] font-bold text-slate-400 mb-1.5 font-mono uppercase tracking-wider">
+            1. Pengurusan Dan Pentadbiran
+          </label>
+          <div class="skeuo-panel-inset p-1 bg-slate-900/40">
+            <select id="filter-pengurusan" onchange="applyFilters()" class="w-full bg-transparent text-xs py-1.5 px-2.5 border-0 focus:outline-none text-slate-200 cursor-pointer">
+              <option value="ALL" class="bg-slate-900 text-slate-200">SEMUA REKOD</option>
+              <option value="HAS" class="bg-slate-900 text-slate-200">Ada Peranti (&gt; 0)</option>
+              <option value="NONE" class="bg-slate-900 text-slate-200">Tiada Peranti (0)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Filter 2: PENGAJARAN DAN PENTADBIRAN -->
+        <div class="mb-4">
+          <label class="block text-[10px] font-bold text-slate-400 mb-1.5 font-mono uppercase tracking-wider">
+            2. Pengajaran Dan Pentadbiran
+          </label>
+          <div class="skeuo-panel-inset p-1 bg-slate-900/40">
+            <select id="filter-pengajaran" onchange="applyFilters()" class="w-full bg-transparent text-xs py-1.5 px-2.5 border-0 focus:outline-none text-slate-200 cursor-pointer">
+              <option value="ALL" class="bg-slate-900 text-slate-200">SEMUA REKOD</option>
+              <option value="HAS" class="bg-slate-900 text-slate-200">Ada Peranti (&gt; 0)</option>
+              <option value="NONE" class="bg-slate-900 text-slate-200">Tiada Peranti (0)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Filter 3: PERANTI GURU -->
+        <div class="mb-4">
+          <label class="block text-[10px] font-bold text-slate-400 mb-1.5 font-mono uppercase tracking-wider">
+            3. Kehadiran Peranti Guru
+          </label>
+          <div class="skeuo-panel-inset p-1 bg-slate-900/40">
+            <select id="filter-peranti" onchange="applyFilters()" class="w-full bg-transparent text-xs py-1.5 px-2.5 border-0 focus:outline-none text-slate-200 cursor-pointer">
+              <option value="ALL" class="bg-slate-900 text-slate-200">SEMUA REKOD</option>
+              <option value="HAS" class="bg-slate-900 text-slate-200">Ada Peranti (&gt; 0)</option>
+              <option value="NONE" class="bg-slate-900 text-slate-200">Tiada Peranti (0)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Filter 4: NAMA PTIS SELIAAN -->
+        <div class="mb-4">
+          <label class="block text-[10px] font-bold text-slate-400 mb-1.5 font-mono uppercase tracking-wider">
+            4. Penyelia PTIS Seliaan
+          </label>
+          <div class="skeuo-panel-inset p-1 bg-slate-900/40">
+            <select id="filter-ptis" onchange="applyFilters()" class="w-full bg-transparent text-xs py-1.5 px-2.5 border-0 focus:outline-none text-slate-200 cursor-pointer">
+              <option value="ALL" class="bg-slate-900 text-slate-200">SEMUA PENYELIA PTIS</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Optional: PPD filter for Kuantan/Maran/Pekan data partitioning -->
+        <div class="mb-4">
+          <label class="block text-[10px] font-bold text-slate-400 mb-1.5 font-mono uppercase tracking-wider">
+            5. Unit Daerah (PPD)
+          </label>
+          <div class="skeuo-panel-inset p-1 bg-slate-900/40">
+            <select id="filter-ppd" onchange="applyFilters()" class="w-full bg-transparent text-xs py-1.5 px-2.5 border-0 focus:outline-none text-slate-200 cursor-pointer">
+              <option value="ALL" class="bg-slate-900 text-slate-200">SEMUA PPD</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 relative z-10">
+        <div class="skeuo-panel-inset p-3 mb-3 text-center bg-slate-950/20">
+          <span class="text-[9px] uppercase font-bold text-slate-400 block mb-0.5">Analisis Padanan</span>
+          <span id="filtered-count" class="text-3xl font-black font-orbitron text-indigo-400">0</span>
+          <span class="text-[10px] text-slate-400 block mt-0.5">Sekolah Aktif / <span id="total-count">0</span></span>
+        </div>
+
+        <button onclick="resetFilters()" class="skeuo-btn w-full py-2.5 bg-red-600/10 text-red-400 font-bold tracking-widest text-[10px] uppercase hover:bg-red-600/20">
+          <i class="fa-solid fa-power-off mr-1.5"></i> Tetap Semula
+        </button>
+      </div>
+    </section>
+
+    <!-- BENTO 2: SCORECARD - PENGURUSAN DAN PENTADBIRAN -->
+    <div class="skeuo-panel p-5 relative flex flex-col justify-between">
+      <div class="skeuo-screw top-2 left-2"></div>
+      <div class="skeuo-screw top-2 right-2"></div>
+      <div class="skeuo-screw bottom-2 left-2"></div>
+      <div class="skeuo-screw bottom-2 right-2"></div>
+      <div class="glass-glare"></div>
+
+      <div class="flex items-center justify-between mb-2 relative z-10">
+        <div>
+          <span class="text-[10px] font-bold font-mono uppercase tracking-wider text-amber-500 block">Sewa Peranti</span>
+          <h3 class="text-xs font-black text-slate-300">PENGURUSAN & PENTADBIRAN</h3>
+        </div>
+        <div class="w-9 h-9 rounded-lg skeuo-panel-inset flex items-center justify-center text-amber-500">
+          <i class="fa-solid fa-briefcase text-lg"></i>
+        </div>
+      </div>
+
+      <!-- LED screen readout -->
+      <div class="led-screen rounded-xl p-3 text-center my-2 relative z-10">
+        <span class="text-[8px] uppercase font-bold text-slate-500 tracking-widest block mb-0.5">KIRAAN ALOKASI KESELURUHAN</span>
+        <span id="scorecard-pengurusan" class="text-3xl md:text-4xl font-black font-orbitron text-amber-500 tracking-wider drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]">0</span>
+        <span class="text-[9px] text-amber-500/80 font-mono block mt-0.5">UNIT BEROPERASI</span>
+      </div>
+
+      <div class="flex items-center justify-between mt-1 text-xs font-mono text-slate-400 border-t border-slate-700/50 pt-2 relative z-10">
+        <span>Kadar Sekolah:</span>
+        <span id="pengurusan-pct" class="font-bold text-amber-500">0%</span>
+      </div>
+    </div>
+
+    <!-- BENTO 3: SCORECARD - PENGAJARAN DAN PENTADBIRAN -->
+    <div class="skeuo-panel p-5 relative flex flex-col justify-between">
+      <div class="skeuo-screw top-2 left-2"></div>
+      <div class="skeuo-screw top-2 right-2"></div>
+      <div class="skeuo-screw bottom-2 left-2"></div>
+      <div class="skeuo-screw bottom-2 right-2"></div>
+      <div class="glass-glare"></div>
+
+      <div class="flex items-center justify-between mb-2 relative z-10">
+        <div>
+          <span class="text-[10px] font-bold font-mono uppercase tracking-wider text-emerald-400 block">Sewa Peranti</span>
+          <h3 class="text-xs font-black text-slate-300">PENGAJARAN & PENTADBIRAN</h3>
+        </div>
+        <div class="w-9 h-9 rounded-lg skeuo-panel-inset flex items-center justify-center text-emerald-500">
+          <i class="fa-solid fa-chalkboard-user text-lg"></i>
+        </div>
+      </div>
+
+      <!-- LED screen readout -->
+      <div class="led-screen rounded-xl p-3 text-center my-2 relative z-10">
+        <span class="text-[8px] uppercase font-bold text-slate-500 tracking-widest block mb-0.5">KIRAAN ALOKASI KESELURUHAN</span>
+        <span id="scorecard-pengajaran" class="text-3xl md:text-4xl font-black font-orbitron text-emerald-400 tracking-wider drop-shadow-[0_0_6px_rgba(52,211,153,0.5)]">0</span>
+        <span class="text-[9px] text-emerald-400/80 font-mono block mt-0.5">UNIT AKTIF PdP</span>
+      </div>
+
+      <div class="flex items-center justify-between mt-1 text-xs font-mono text-slate-400 border-t border-slate-700/50 pt-2 relative z-10">
+        <span>Kadar Sekolah:</span>
+        <span id="pengajaran-pct" class="font-bold text-emerald-400">0%</span>
+      </div>
+    </div>
+
+    <!-- BENTO 4: SCORECARD - PERANTI GURU -->
+    <div class="skeuo-panel p-5 relative flex flex-col justify-between">
+      <div class="skeuo-screw top-2 left-2"></div>
+      <div class="skeuo-screw top-2 right-2"></div>
+      <div class="skeuo-screw bottom-2 left-2"></div>
+      <div class="skeuo-screw bottom-2 right-2"></div>
+      <div class="glass-glare"></div>
+
+      <div class="flex items-center justify-between mb-2 relative z-10">
+        <div>
+          <span class="text-[10px] font-bold font-mono uppercase tracking-wider text-cyan-400 block">Guru Device</span>
+          <h3 class="text-xs font-black text-slate-300">ALOKASI PERANTI GURU</h3>
+        </div>
+        <div class="w-9 h-9 rounded-lg skeuo-panel-inset flex items-center justify-center text-cyan-500">
+          <i class="fa-solid fa-laptop-code text-lg"></i>
+        </div>
+      </div>
+
+      <!-- LED screen readout -->
+      <div class="led-screen rounded-xl p-3 text-center my-2 relative z-10">
+        <span class="text-[8px] uppercase font-bold text-slate-500 tracking-widest block mb-0.5">KIRAAN ALOKASI KESELURUHAN</span>
+        <span id="scorecard-peranti" class="text-3xl md:text-4xl font-black font-orbitron text-cyan-400 tracking-wider drop-shadow-[0_0_6px_rgba(34,211,238,0.5)]">0</span>
+        <span class="text-[9px] text-cyan-400/80 font-mono block mt-0.5">KOMPUTER RIBA GURU</span>
+      </div>
+
+      <div class="flex items-center justify-between mt-1 text-xs font-mono text-slate-400 border-t border-slate-700/50 pt-2 relative z-10">
+        <span>Kadar Sekolah:</span>
+        <span id="peranti-pct" class="font-bold text-cyan-400">0%</span>
+      </div>
+    </div>
+
+    <!-- BENTO 5: CARTA ALOKASI PERANGKAT UTAMA (Spans 2 columns) -->
+    <div class="skeuo-panel p-5 lg:col-span-2 relative flex flex-col justify-between min-h-[350px]">
+      <div class="skeuo-screw top-2 left-2"></div>
+      <div class="skeuo-screw top-2 right-2"></div>
+      <div class="skeuo-screw bottom-2 left-2"></div>
+      <div class="skeuo-screw bottom-2 right-2"></div>
+      <div class="glass-glare"></div>
+
+      <div class="flex items-center justify-between border-b border-slate-700/50 pb-3 mb-4 relative z-10">
+        <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-400 flex items-center gap-2">
+          <i class="fa-solid fa-chart-column text-indigo-500"></i> Agihan Unit Alokasi Mengikut PPD
+        </h3>
+        <span class="text-[9px] bg-indigo-500/20 text-indigo-400 font-bold px-2.5 py-1 rounded-full font-mono">RETRO GRAF BAR</span>
+      </div>
+
+      <div class="flex-grow flex items-center justify-center relative w-full h-[240px] z-10">
+        <canvas id="chart-devices-ppd"></canvas>
+      </div>
+    </div>
+
+    <!-- BENTO 6: CARTA PROFILING GRED SEKOLAH (Spans 1 column) -->
+    <div class="skeuo-panel p-5 relative flex flex-col justify-between min-h-[350px]">
+      <div class="skeuo-screw top-2 left-2"></div>
+      <div class="skeuo-screw top-2 right-2"></div>
+      <div class="skeuo-screw bottom-2 left-2"></div>
+      <div class="skeuo-screw bottom-2 right-2"></div>
+      <div class="glass-glare"></div>
+
+      <div class="flex items-center justify-between border-b border-slate-700/50 pb-3 mb-4 relative z-10">
+        <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-400 flex items-center gap-2">
+          <i class="fa-solid fa-pie-chart text-pink-500"></i> Profiling Gred Sekolah
+        </h3>
+        <span class="text-[9px] bg-pink-500/20 text-pink-400 font-bold px-2.5 py-1 rounded-full font-mono">DONAT</span>
+      </div>
+
+      <div class="flex-grow flex items-center justify-center relative w-full h-[220px] z-10">
+        <canvas id="chart-gred"></canvas>
+      </div>
+    </div>
+
+    <!-- BENTO 7: BEBAN TUGAS PTIS (Spans 1 column) -->
+    <div class="skeuo-panel p-5 relative flex flex-col justify-between min-h-[350px]">
+      <div class="skeuo-screw top-2 left-2"></div>
+      <div class="skeuo-screw top-2 right-2"></div>
+      <div class="skeuo-screw bottom-2 left-2"></div>
+      <div class="skeuo-screw bottom-2 right-2"></div>
+      <div class="glass-glare"></div>
+
+      <div class="flex items-center justify-between border-b border-slate-700/50 pb-3 mb-4 relative z-10">
+        <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-slate-400 flex items-center gap-2">
+          <i class="fa-solid fa-shield-halved text-cyan-500"></i> Portfolio PTIS Seliaan
+        </h3>
+        <span class="text-[9px] bg-cyan-500/20 text-cyan-400 font-bold px-2.5 py-1 rounded-full font-mono">RADAR</span>
+      </div>
+
+      <div class="flex-grow flex items-center justify-center relative w-full h-[220px] z-10">
+        <canvas id="chart-ptis-workload"></canvas>
+      </div>
+    </div>
+
+    <!-- BENTO 8: MAIN DATA MASTER LEDGER (Spans all columns - Span 4) -->
+    <div class="skeuo-panel p-5 md:p-6 lg:col-span-4 relative flex flex-col justify-between">
+      <div class="skeuo-screw top-2 left-2"></div>
+      <div class="skeuo-screw top-2 right-2"></div>
+      <div class="skeuo-screw bottom-2 left-2"></div>
+      <div class="skeuo-screw bottom-2 right-2"></div>
+      <div class="glass-glare"></div>
+
+      <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 border-b border-slate-700/50 pb-4 mb-4 relative z-10">
+        <div>
+          <h3 class="text-base font-bold font-mono uppercase tracking-wider text-indigo-400 flex items-center gap-2">
+            <i class="fa-solid fa-database"></i> Lejar Kawalan Utama Projek Sewaan Sekolah
+          </h3>
+          <p class="text-xs text-slate-400 mt-1">Daftar lengkap peranti, maklumat coordinator, gred serta penyelia PTIS yang menguruskan logistik fizikal.</p>
+        </div>
+
+        <!-- Filter search box and export buttons -->
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- Tactile input box -->
+          <div class="skeuo-panel-inset flex items-center px-3 py-1.5 w-full sm:w-64">
+            <i class="fa-solid fa-magnifying-glass text-slate-500 mr-2 text-sm"></i>
+            <input type="text" id="search-bar" onkeyup="applyFilters()" placeholder="Cari sekolah, kod, PTIS atau guru..." class="bg-transparent border-0 text-xs text-slate-200 placeholder-slate-500 focus:outline-none w-full">
+          </div>
+
+          <!-- Export command -->
+          <button onclick="exportToCSV()" class="skeuo-btn px-4 py-2 text-xs font-bold text-slate-300 flex items-center gap-1.5 hover:text-white">
+            <i class="fa-solid fa-file-csv text-emerald-500"></i> Muat Turun CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- Table responsive layout with skeuomorphic frame -->
+      <div class="overflow-x-auto rounded-xl skeuo-panel-inset border border-black/30 bg-slate-950/20 relative z-10">
+        <table class="w-full text-left border-collapse font-sans text-xs md:text-sm">
+          <thead>
+            <tr class="bg-slate-900/60 font-mono text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800">
+              <th class="p-3.5 font-bold text-center w-12">Bil</th>
+              <th class="p-3.5 font-bold">Kod Sekolah</th>
+              <th class="p-3.5 font-bold">Nama Sekolah</th>
+              <th class="p-3.5 font-bold text-center">PPD</th>
+              <th class="p-3.5 font-bold text-center text-amber-500">Pengurusan</th>
+              <th class="p-3.5 font-bold text-center text-emerald-400">Pengajaran</th>
+              <th class="p-3.5 font-bold text-center text-cyan-400">Peranti Guru</th>
+              <th class="p-3.5 font-bold">Penyelaras ICT</th>
+              <th class="p-3.5 font-bold text-center">Gred</th>
+              <th class="p-3.5 font-bold text-center">Tindakan</th>
+            </tr>
+          </thead>
+          <tbody id="schools-tbody" class="divide-y divide-slate-800/60 text-slate-300 font-medium">
+            <tr>
+              <td colspan="10" class="p-8 text-center text-slate-500 font-mono">Memuatkan data dari pangkalan... Sila tunggu sebentar.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Interactive pagination panel -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 pt-3 border-t border-slate-800 relative z-10">
+        <div class="text-xs font-mono text-slate-400">
+          Memaparkan baris <span id="pag-start" class="text-slate-200 font-bold">0</span> - <span id="pag-end" class="text-slate-200 font-bold">0</span> daripada <span id="pag-total" class="text-slate-200 font-bold">0</span> sekolah padanan
+        </div>
+        <div class="flex items-center gap-1.5 skeuo-panel-inset p-1 rounded-xl">
+          <button onclick="prevPage()" class="skeuo-btn px-3 py-1.5 text-xs font-bold font-mono text-slate-400">
+            <i class="fa-solid fa-backward mr-1"></i> UNDUR
+          </button>
+          <span class="text-xs font-mono font-bold px-3 py-1.5 text-indigo-400" id="current-page">HALAMAN 1</span>
+          <button onclick="nextPage()" class="skeuo-btn px-3 py-1.5 text-xs font-bold font-mono text-slate-400">
+            MAJU <i class="fa-solid fa-forward ml-1"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL: DETAILED SCHOOL DOSSIER -->
+  <div id="school-modal" class="fixed inset-0 z-50 overflow-y-auto hidden flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+    <div class="relative w-full max-w-2xl skeuo-panel p-6 md:p-8 shadow-2xl transition-all scale-95 duration-200 ease-out" id="modal-card">
+      <div class="skeuo-screw top-2 left-2"></div>
+      <div class="skeuo-screw top-2 right-2"></div>
+      <div class="skeuo-screw bottom-2 left-2"></div>
+      <div class="skeuo-screw bottom-2 right-2"></div>
+      <div class="glass-glare"></div>
+
+      <!-- Header of File Dossier -->
+      <div class="flex items-center justify-between border-b border-slate-700 pb-4 mb-6 relative z-10">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+            <i class="fa-solid fa-folder-closed text-2xl"></i>
+          </div>
+          <div>
+            <div class="text-[9px] uppercase font-mono tracking-widest text-slate-400">DOSIER SEWAAN SEKOLAH RESMI</div>
+            <h3 class="text-base font-bold text-slate-200" id="modal-title">NAMA SEKOLAH</h3>
+          </div>
+        </div>
+        <button onclick="closeModal()" class="skeuo-btn w-9 h-9 flex items-center justify-center text-slate-400 hover:text-red-400">
+          <i class="fa-solid fa-times text-md"></i>
+        </button>
+      </div>
+
+      <!-- Main Dossier Data Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 relative z-10">
+        
+        <!-- Left Column: Core Identifiers -->
+        <div class="space-y-3">
+          <div>
+            <span class="block text-[9px] font-mono uppercase tracking-wider text-slate-500">Kod Unik Sekolah</span>
+            <div id="modal-code" class="text-xs font-bold text-slate-300 font-mono skeuo-panel-inset py-2 px-3 bg-slate-900/30">KEE0000</div>
+          </div>
+          <div>
+            <span class="block text-[9px] font-mono uppercase tracking-wider text-slate-500">Kawasan PPD</span>
+            <div id="modal-ppd" class="text-xs font-bold text-slate-300 skeuo-panel-inset py-2 px-3 bg-slate-900/30">PPD KUANTAN</div>
+          </div>
+          <div>
+            <span class="block text-[9px] font-mono uppercase tracking-wider text-slate-500">Gred Sekolah</span>
+            <div id="modal-gred" class="text-xs font-bold text-indigo-400 skeuo-panel-inset py-2 px-3 bg-slate-900/30">GRED A</div>
+          </div>
+          <div>
+            <span class="block text-[9px] font-mono uppercase tracking-wider text-slate-500">Status Semasa</span>
+            <div id="modal-status" class="text-xs font-bold text-emerald-400 skeuo-panel-inset py-2 px-3 bg-slate-900/30">AKTIF</div>
+          </div>
+        </div>
+
+        <!-- Right Column: Personnel & Contact Info -->
+        <div class="space-y-3">
+          <div>
+            <span class="block text-[9px] font-mono uppercase tracking-wider text-slate-500">Penyelia PTIS Seliaan</span>
+            <div id="modal-ptis" class="text-xs font-bold text-amber-500 skeuo-panel-inset py-2 px-3 bg-slate-900/30">NAMA PTIS</div>
+          </div>
+          <div>
+            <span class="block text-[9px] font-mono uppercase tracking-wider text-slate-500">Guru Penyelaras ICT</span>
+            <div id="modal-coordinator" class="text-xs font-bold text-slate-300 skeuo-panel-inset py-2 px-3 bg-slate-900/30">NAMA KOORDINATOR</div>
+          </div>
+          <div>
+            <span class="block text-[9px] font-mono uppercase tracking-wider text-slate-500">Nombor Telefon</span>
+            <div class="skeuo-panel-inset py-2 px-3 bg-slate-900/30 flex items-center justify-between">
+              <span id="modal-phone" class="text-xs font-bold text-slate-300 font-mono">09-000000</span>
+              <a id="modal-phone-btn" href="#" class="text-indigo-400 hover:text-indigo-300 text-[10px] font-bold flex items-center gap-1">
+                <i class="fa-solid fa-phone"></i> HUBUNGI
+              </a>
+            </div>
+          </div>
+          <div>
+            <span class="block text-[9px] font-mono uppercase tracking-wider text-slate-500">E-mel Rasmi</span>
+            <div class="skeuo-panel-inset py-2 px-3 bg-slate-900/30 flex items-center justify-between">
+              <span id="modal-email" class="text-xs font-bold text-slate-400 font-mono truncate max-w-[140px]">email@sekolah.edu.my</span>
+              <a id="modal-email-btn" href="#" class="text-indigo-400 hover:text-indigo-300 text-[10px] font-bold flex items-center gap-1">
+                <i class="fa-solid fa-envelope"></i> EMEL
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Allocated devices meter charts mimicking vintage LED bar indicators -->
+      <div class="mt-6 border-t border-slate-700/60 pt-5 relative z-10">
+        <h4 class="text-xs font-mono uppercase font-bold text-slate-400 tracking-wider mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-cubes-stacked text-indigo-500"></i> Kapasiti Logistik Fizikal Peranti Sewaan
+        </h4>
+        
+        <div class="space-y-3.5">
+          <!-- Pengurusan Dan Pentadbiran Bar -->
+          <div>
+            <div class="flex justify-between text-xs font-mono font-bold text-amber-500 mb-1">
+              <span>PENGURUSAN DAN PENTADBIRAN</span>
+              <span id="modal-val-pengurusan">0 UNIT</span>
+            </div>
+            <div class="w-full h-3 bg-slate-950 rounded-full overflow-hidden skeuo-panel-inset p-0.5">
+              <div id="modal-progress-pengurusan" class="h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Pengajaran Dan Pentadbiran Bar -->
+          <div>
+            <div class="flex justify-between text-xs font-mono font-bold text-emerald-400 mb-1">
+              <span>PENGAJARAN DAN PENTADBIRAN</span>
+              <span id="modal-val-pengajaran">0 UNIT</span>
+            </div>
+            <div class="w-full h-3 bg-slate-950 rounded-full overflow-hidden skeuo-panel-inset p-0.5">
+              <div id="modal-progress-pengajaran" class="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Peranti Guru Bar -->
+          <div>
+            <div class="flex justify-between text-xs font-mono font-bold text-cyan-400 mb-1">
+              <span>PERANTI GURU</span>
+              <span id="modal-val-peranti">0 UNIT</span>
+            </div>
+            <div class="w-full h-3 bg-slate-950 rounded-full overflow-hidden skeuo-panel-inset p-0.5">
+              <div id="modal-progress-peranti" class="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 flex justify-end relative z-10">
+        <button onclick="closeModal()" class="skeuo-btn px-6 py-2.5 bg-indigo-600 text-white font-bold text-xs uppercase tracking-widest hover:bg-indigo-500">
+          <i class="fa-solid fa-circle-check mr-1.5"></i> Tutup Dosier
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DATA DIAGNOSTIC -->
+  <div id="diagnostic-modal" class="fixed inset-0 z-50 overflow-y-auto hidden flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+    <div class="relative w-full max-w-lg skeuo-panel p-6 md:p-8 shadow-2xl transition-all scale-95 duration-200 ease-out" id="diagnostic-card">
+      <div class="skeuo-screw top-2 left-2"></div>
+      <div class="skeuo-screw top-2 right-2"></div>
+      <div class="skeuo-screw bottom-2 left-2"></div>
+      <div class="skeuo-screw bottom-2 right-2"></div>
+      <div class="glass-glare"></div>
+
+      <div class="flex items-center justify-between border-b border-slate-700 pb-4 mb-4 relative z-10">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+            <i class="fa-solid fa-gauge-high text-xl"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-200">SISTEM DIAGNOSTIK DATA</h3>
+            <p class="text-[9px] uppercase font-mono text-slate-400">Peta Penyepaduan Google Sheet</p>
+          </div>
+        </div>
+        <button onclick="closeDiagnosticModal()" class="skeuo-btn w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-400">
+          <i class="fa-solid fa-times text-sm"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 relative z-10">
+        <div class="led-screen rounded-xl p-3 text-xs font-mono space-y-1 text-slate-300">
+          <div class="flex justify-between border-b border-slate-800 pb-1 mb-1 text-[10px] text-slate-500">
+            <span>PARAMETER SISTEM</span>
+            <span>STATUS DIAGNOSTIK</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Punca Saluran Data:</span>
+            <span id="diag-source" class="font-bold text-amber-500">MENGHUBUNGKAN...</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Jumlah Lajur Sheet:</span>
+            <span id="diag-col-count" class="font-bold text-slate-200">0</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Baris Rekod Sekolah:</span>
+            <span id="diag-row-count" class="font-bold text-slate-200">0</span>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="text-[10px] font-bold font-mono text-slate-400 uppercase tracking-wider mb-2">Pemetaan Lajur Sistem vs Google Sheet:</h4>
+          <div class="max-h-60 overflow-y-auto skeuo-panel-inset p-2 space-y-1.5 text-[11px] font-mono bg-slate-950/20">
+            <div id="diag-mapping-list" class="space-y-1">
+              <!-- Populated dynamically via javascript -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end relative z-10">
+        <button onclick="closeDiagnosticModal()" class="skeuo-btn px-4 py-2 bg-indigo-600 text-white font-bold text-xs uppercase tracking-widest hover:bg-indigo-500">
+          <i class="fa-solid fa-circle-check mr-1"></i> Selesai
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: FLOOPY MANUAL IMPORT PORT -->
+  <div id="import-modal" class="fixed inset-0 z-50 overflow-y-auto hidden flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+    <div class="relative w-full max-w-lg skeuo-panel p-6 md:p-8 shadow-2xl transition-all scale-95 duration-200 ease-out" id="import-card">
+      <div class="skeuo-screw top-2 left-2"></div>
+      <div class="skeuo-screw top-2 right-2"></div>
+      <div class="skeuo-screw bottom-2 left-2"></div>
+      <div class="skeuo-screw bottom-2 right-2"></div>
+      <div class="glass-glare"></div>
+
+      <div class="flex items-center justify-between border-b border-slate-700 pb-4 mb-4 relative z-10">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+            <i class="fa-solid fa-file-import text-xl"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-200">PORT MANUAL IMPORT DATA OVERRIDE</h3>
+            <p class="text-[9px] uppercase font-mono text-slate-400">Pintas Sekatan CORS / Sandbox Pelayar</p>
+          </div>
+        </div>
+        <button onclick="closeImportModal()" class="skeuo-btn w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-400">
+          <i class="fa-solid fa-times text-sm"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 relative z-10">
+        <p class="text-xs text-slate-400">
+          Jika browser menyekat sambungan Google Sheets secara langsung, sila buka pautan Google Sheet anda di tab lain, muat turun sebagai <b>CSV</b> (atau salin keseluruhan baris kandungan jadual), kemudian <b>tampal (paste) teks tersebut di dalam kotak input di bawah</b>.
+        </p>
+
+        <div class="skeuo-panel-inset p-2 bg-slate-950/40">
+          <textarea id="raw-csv-input" rows="8" placeholder="Tampalkan teks data CSV dari Google Sheet anda di sini (Pastikan baris header pertama disertakan sekali)..." class="w-full bg-transparent border-0 text-xs font-mono text-emerald-400 focus:outline-none focus:ring-0 placeholder-emerald-800 resize-none"></textarea>
+        </div>
+
+        <div class="flex justify-between items-center text-[10px] text-slate-500 font-mono">
+          <span>* Format disokong: Comma-Separated (CSV)</span>
+          <button onclick="clearImportText()" class="text-red-400 hover:underline">Padamkan Kotak</button>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end gap-3 relative z-10">
+        <button onclick="closeImportModal()" class="skeuo-btn px-4 py-2 text-slate-400 text-xs font-bold uppercase hover:text-white">
+          Batal
+        </button>
+        <button onclick="processManualImport()" class="skeuo-btn px-5 py-2.5 bg-emerald-600 text-white font-bold text-xs uppercase tracking-widest hover:bg-emerald-500">
+          <i class="fa-solid fa-bolt mr-1.5"></i> Sumbat Data Manual
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- METALLIC FOOTER BOARD -->
+  <footer class="skeuo-panel p-4 text-center text-xs text-slate-500 font-mono relative mt-6">
+    <div class="skeuo-screw top-1 left-2"></div>
+    <div class="skeuo-screw top-1 right-2"></div>
+    <div class="glass-glare"></div>
+    <p class="relative z-10">
+      &copy; 2026 <span class="text-slate-400 font-bold">PROJEK SEWAAN SEKOLAH SEKOLAH KUANTAN</span>. Diprogramkan dengan Standard Skeuomorphism Bento Industri.
+    </p>
+  </footer>
+
+  <!-- SYSTEM CORE JAVASCRIPT ENGINE -->
+  <script>
+    const SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRwZsuFbZvdLp4HWUhxv6cP1vih5QTsOGXE7OhY623VnIw36o2pGDs9XS-eXAJR0g/pub?output=csv';
+    
+    let originalData = [];
+    let filteredData = [];
+    let soundEnabled = true;
+    
+    // Global Diagnostic Stores
+    let lastRawHeaders = [];
+    let lastIdxMap = {};
+    let dataSource = "BELUM DIHUBUNGKAN";
+    let lastRowCount = 0;
+
+    // Pagination state tracker
+    let currentPage = 1;
+    const itemsPerPage = 10;
+
+    // Charts references for dynamic destructions
+    let chartDevicesPpdRef = null;
+    let chartGredRef = null;
+    let chartPtisRef = null;
+
+    // Trigger System start on document ready
+    window.onload = function() {
+      // Start clocks
+      setInterval(updateClock, 1000);
+      updateClock();
+
+      // Trigger tactile alert play
+      setTimeout(() => {
+        playSound('success');
+      }, 500);
+
+      // Start fetching dataset
+      fetchSheetData();
+    };
+
+    // System Time Clock Readout
+    function updateClock() {
+      const now = new Date();
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
+      let seconds = now.getSeconds();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12; // 12-hour converter
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      seconds = seconds < 10 ? '0' + seconds : seconds;
+      
+      const clockString = `${hours}:${minutes}:${seconds} ${ampm}`;
+      document.getElementById('live-clock').innerText = clockString;
+    }
+
+    // High fidelity mechanical physical sound synthesizer using Web Audio API
+    function playSound(type) {
+      if (!soundEnabled) return;
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'click') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(850, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(140, audioCtx.currentTime + 0.07);
+          gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.07);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.07);
+        } else if (type === 'switch') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+          osc.frequency.setValueAtTime(600, audioCtx.currentTime + 0.05);
+          gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.1);
+        } else if (type === 'success') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+          gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.002, audioCtx.currentTime + 0.12);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.12);
+
+          setTimeout(() => {
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.connect(gain2);
+            gain2.connect(audioCtx.destination);
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+            gain2.gain.setValueAtTime(0.03, audioCtx.currentTime);
+            gain2.gain.exponentialRampToValueAtTime(0.002, audioCtx.currentTime + 0.25);
+            osc2.start();
+            osc2.stop(audioCtx.currentTime + 0.25);
+          }, 100);
+        }
+      } catch (e) {
+        console.warn('Audio Context blocked or failed to boot.', e);
+      }
+    }
+
+    // Toggle sound system parameters
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('sound-toggle');
+      const icon = document.getElementById('sound-icon');
+      if (soundEnabled) {
+        btn.classList.add('active');
+        icon.className = 'fa-solid fa-volume-high text-indigo-500';
+        playSound('click');
+      } else {
+        btn.classList.remove('active');
+        icon.className = 'fa-solid fa-volume-xmark text-slate-500';
+      }
+    }
+
+    // Toggle physical dashboard visual light parameters
+    function toggleTheme() {
+      playSound('switch');
+      const html = document.documentElement;
+      const themeBtn = document.getElementById('theme-toggle');
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        themeBtn.classList.add('active');
+      } else {
+        html.classList.add('dark');
+        themeBtn.classList.remove('active');
+      }
+      // Re-trigger visual canvas refresh
+      setTimeout(() => {
+        updateAllCharts();
+      }, 150);
+    }
+
+    // High fidelity simulated backup generator matching user's detailed headers
+    function generateFallbackDataset() {
+      const ppds = ["PPD KUANTAN", "PPD MARAN", "PPD PEKAN"];
+      const grades = ["A", "B", "C"];
+      const statuses = ["AKTIF", "DALAM SEWAKAN", "SELESAI"];
+      const ptiss = [
+        "KHAIRUL ANUAR BIN ABDULLAH",
+        "NOR AZLINA BINTI MANSOR",
+        "MOHD SHUKRI BIN RAMLI",
+        "SITI ZUBAIDAH BINTI KASIM",
+        "RIZAL BIN HASHIM"
+      ];
+      const names = [
+        "SMK BUKIT GOH", "SMK SUNGAI ISAP", "SMK SULTAN ABU BAKAR", "SMK INDERA MAHKOTA 2",
+        "SMK TANAH PUTIH", "SK GALING", "SK TERUNTUM", "SK SULTAN ABDULLAH", "SMK AIR PUTIH",
+        "SMK TENGKU AFZAN", "SK SEMAMBU", "SK INDERA MAHKOTA", "SJK(C) PEI CHAI", "SJK(T) BANDAR KUANTAN",
+        "SMK BESERAH", "SK SEBERANG BARAT", "SMK JALAN PEKAN", "SMK SUNGAI KARANG", "SK PELINDUNG",
+        "SMK TANJUNG LUMPUR", "SK CHERATING", "SK BESERAH", "SMK INDERA SEMPURNA", "SMK GAMBANG"
+      ];
+      
+      const fallbackList = [];
+      for (let i = 0; i < names.length; i++) {
+        const code = `KEE${3000 + i}`;
+        const ppd = ppds[i % ppds.length];
+        const gred = grades[i % grades.length];
+        const status = statuses[i % statuses.length];
+        const ptis = ptiss[i % ptiss.length];
+        
+        const pengurusan = Math.floor(Math.random() * 20) + 2;
+        const pengajaran = Math.floor(Math.random() * 30) + 5;
+        const peranti = Math.floor(Math.random() * 25) + 5;
+        
+        fallbackList.push({
+          timestamp: '2026-06-10 10:17:00',
+          bil: i + 1,
+          ppd: ppd,
+          kodSekolah: code,
+          namaSekolah: names[i],
+          pengurusan: pengurusan,
+          pengajaran: pengajaran,
+          perantiGuru: peranti,
+          penyelarasIct: `Cikgu Ahmad ${names[i].split(" ").pop()}`,
+          gred: gred,
+          emailNoTelefon: `admin.${code.toLowerCase()}@edu.my / 09-5142345`,
+          status: status,
+          ptisSeliaan: ptis,
+          noTelefon: `019-${Math.floor(1000000 + Math.random() * 9000000)}`,
+          email: `${code.toLowerCase()}@moe-dl.edu.my`
+        });
+      }
+      return fallbackList;
+    }
+
+    // Flexible delimiter-aware CSV syntax reader with auto-detection
+    function parseCSV(text) {
+      // Auto-detect the delimiter by counting occurrences in the first line
+      const lines = text.split('\n');
+      const firstLine = lines[0] || '';
+      const delimiters = [',', ';', '\t', '_', '|'];
+      let bestDelimiter = ',';
+      let maxCount = -1;
+      
+      delimiters.forEach(d => {
+        const count = firstLine.split(d).length - 1;
+        if (count > maxCount) {
+          maxCount = count;
+          bestDelimiter = d;
+        }
+      });
+      
+      const delim = bestDelimiter;
+      let p = '', c = '', r = [];
+      let q = false;
+      let row = [''];
+      
+      for (let i = 0; i < text.length; i++) {
+        c = text[i];
+        let next = text[i+1];
+        if (c === '"') {
+          if (q && next === '"') { row[row.length - 1] += '"'; i++; }
+          else { q = !q; }
+        } else if (c === delim && !q) {
+          row.push('');
+        } else if ((c === '\r' || c === '\n') && !q) {
+          if (c === '\r' && next === '\n') { i++; }
+          if (row.length > 1 || row[0] !== '') {
+            r.push(row);
+          }
+          row = [''];
+        } else {
+          row[row.length - 1] += c;
+        }
+      }
+      if (row.length > 1 || row[0] !== '') {
+        r.push(row);
+      }
+      return r;
+    }
+
+    function buildCleanDatasetFromRows(rows) {
+      if (rows.length < 2) return [];
+      
+      // Clean headers to lower letters & numbers only for highly-flexible comparison
+      const cleanHeader = (str) => {
+        if (!str) return '';
+        return str.toString()
+          .trim()
+          .toLowerCase()
+          .replace(/[\s_\-\u00A0]/g, '') // remove spaces, underscores, hyphens, non-breaking spaces
+          .replace(/[^a-z0-9]/g, '');   // remove any remaining special characters
+      };
+
+      // Map headers dynamically with extremely robust partial substring checks
+      const idxMap = {};
+      rows[0].forEach((rawHeader, idx) => {
+        const h = cleanHeader(rawHeader);
+        
+        if (h.includes('timestamp') || h.includes('masa')) {
+          idxMap.timestamp = idx;
+        } else if (h === 'bil' || h === 'no' || h === 'bilangan') {
+          idxMap.bil = idx;
+        } else if (h.includes('ppd') || h.includes('daerah')) {
+          idxMap.ppd = idx;
+        } else if (h.includes('kodsekolah') || h === 'kod') {
+          idxMap.kodSekolah = idx;
+        } else if (h.includes('namasekolah') || (h.includes('sekolah') && !h.includes('gred'))) {
+          idxMap.namaSekolah = idx;
+        } else if (h.includes('pengurusan') && (h.includes('pentadbiran') || h.includes('pdt') || h.includes('pakar') || h.includes('pdt'))) {
+          idxMap.pengurusan = idx;
+        } else if (h.includes('pengajaran') && (h.includes('pentadbiran') || h.includes('pdp') || h.includes('ajar') || h.includes('pdp'))) {
+          idxMap.pengajaran = idx;
+        } else if (h.includes('perantiguru') || (h.includes('peranti') && h.includes('guru'))) {
+          idxMap.perantiGuru = idx;
+        } else if (h.includes('penyelarasict') || h.includes('ict') || h.includes('penyelaras') || h.includes('coordinator')) {
+          idxMap.penyelarasIct = idx;
+        } else if (h === 'gred' || h === 'gredsekolah') {
+          idxMap.gred = idx;
+        } else if (h.includes('emailnotelefon') || h.includes('emelnotelefon')) {
+          idxMap.emailNoTelefon = idx;
+        } else if (h.includes('status')) {
+          idxMap.status = idx;
+        } else if (h.includes('ptis') || h.includes('seliaan')) {
+          idxMap.ptisSeliaan = idx;
+        } else if (h.includes('notelefon') || h.includes('telefon') || h.includes('n0telefon')) {
+          if (!h.includes('emailnotelefon')) {
+            idxMap.noTelefon = idx;
+          }
+        } else if (h.includes('email') || h.includes('emel')) {
+          if (!h.includes('emailnotelefon')) {
+            idxMap.email = idx;
+          }
+        }
+      });
+
+      // Secure fallbacks to strictly default Google Sheet indexes in case any headers didn't match
+      if (idxMap.timestamp === undefined) idxMap.timestamp = 0;
+      if (idxMap.bil === undefined) idxMap.bil = 1;
+      if (idxMap.ppd === undefined) idxMap.ppd = 2;
+      if (idxMap.kodSekolah === undefined) idxMap.kodSekolah = 3;
+      if (idxMap.namaSekolah === undefined) idxMap.namaSekolah = 4;
+      if (idxMap.pengurusan === undefined) idxMap.pengurusan = 5;
+      if (idxMap.pengajaran === undefined) idxMap.pengajaran = 6;
+      if (idxMap.perantiGuru === undefined) idxMap.perantiGuru = 7;
+      if (idxMap.penyelarasIct === undefined) idxMap.penyelarasIct = 8;
+      if (idxMap.gred === undefined) idxMap.gred = 9;
+      if (idxMap.emailNoTelefon === undefined) idxMap.emailNoTelefon = 10;
+      if (idxMap.status === undefined) idxMap.status = 11;
+      if (idxMap.ptisSeliaan === undefined) idxMap.ptisSeliaan = 12;
+      if (idxMap.noTelefon === undefined) idxMap.noTelefon = 13;
+      if (idxMap.email === undefined) idxMap.email = 14;
+
+      // Update global diagnostic parameters
+      lastRawHeaders = rows[0];
+      lastIdxMap = idxMap;
+      lastRowCount = rows.length - 1;
+
+      const cleanDataset = [];
+      for (let i = 1; i < rows.length; i++) {
+        const rowData = rows[i];
+        // Ensure skip empty rows
+        if (rowData.length < 3 || !rowData[idxMap.namaSekolah] || rowData[idxMap.namaSekolah].trim() === '') continue;
+
+        // Numbers cleaner (handles " - ", decimals, formatted text, and " unit" strings)
+        const cleanNum = (val) => {
+          if (!val) return 0;
+          const parsed = parseInt(val.toString().replace(/[^\d]/g, ''), 10);
+          return isNaN(parsed) ? 0 : parsed;
+        };
+
+        cleanDataset.push({
+          timestamp: rowData[idxMap.timestamp] || 'Tiada Rekod',
+          bil: cleanNum(rowData[idxMap.bil]) || i,
+          ppd: rowData[idxMap.ppd] ? rowData[idxMap.ppd].trim().toUpperCase() : 'PPD KUANTAN',
+          kodSekolah: rowData[idxMap.kodSekolah] ? rowData[idxMap.kodSekolah].trim() : `KEE-${i}`,
+          namaSekolah: rowData[idxMap.namaSekolah].trim().toUpperCase(),
+          pengurusan: cleanNum(rowData[idxMap.pengurusan]),
+          pengajaran: cleanNum(rowData[idxMap.pengajaran]),
+          perantiGuru: cleanNum(rowData[idxMap.perantiGuru]),
+          penyelarasIct: rowData[idxMap.penyelarasIct] ? rowData[idxMap.penyelarasIct].trim() : 'TIADA GURU',
+          gred: rowData[idxMap.gred] ? rowData[idxMap.gred].trim().toUpperCase() : 'TIADA',
+          emailNoTelefon: rowData[idxMap.emailNoTelefon] ? rowData[idxMap.emailNoTelefon].trim() : '-',
+          status: rowData[idxMap.status] ? rowData[idxMap.status].trim().toUpperCase() : 'AKTIF',
+          ptisSeliaan: rowData[idxMap.ptisSeliaan] ? rowData[idxMap.ptisSeliaan].trim().toUpperCase() : 'BELUM DIAGIKAN',
+          noTelefon: rowData[idxMap.noTelefon] ? rowData[idxMap.noTelefon].trim() : '-',
+          email: rowData[idxMap.email] ? rowData[idxMap.email].trim() : '-'
+        });
+      }
+      return cleanDataset;
+    }
+
+    // Google Sheets live API communication hook
+    async function fetchSheetData() {
+      document.getElementById('status-text').innerText = "MENYELARAS...";
+      document.getElementById('status-text').className = "font-bold text-amber-500 status-blink";
+      document.getElementById('status-led').className = "relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500";
+      
+      try {
+        const response = await fetch(SPREADSHEET_URL);
+        if (!response.ok) throw new Error("CORS or Connection Interruption");
+        
+        const rawCSV = await response.text();
+        const rows = parseCSV(rawCSV);
+        
+        if (rows.length < 2) throw new Error("Format Google Sheet Rosak");
+
+        const parsedData = buildCleanDatasetFromRows(rows);
+        if (parsedData.length === 0) throw new Error("Tiada baris dikesan");
+
+        originalData = parsedData;
+        dataSource = "LIVE (GOOGLE SHEET)";
+        
+        document.getElementById('status-text').innerText = "LIVE (GOOGLE SHEET)";
+        document.getElementById('status-text').className = "font-bold text-emerald-400";
+        document.getElementById('status-led').className = "relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500";
+        document.getElementById('fallback-warning').classList.add('hidden');
+        playSound('success');
+
+      } catch (err) {
+        console.warn("Google Sheet API access failed due to browser environment sandbox. Activating backup.", err);
+        originalData = generateFallbackDataset();
+        dataSource = "LUAR TALIAN (DATA SIMULASI)";
+        
+        // Setup diagnostic fallback map representation
+        lastRawHeaders = ["Timestamp", "BIL", "PPD", "KOD SEKOLAH", "NAMA SEKOLAH", "PENGURUSAN DAN PENTADBIRAN", "PENGAJARAN DAN PENTADBIRAN", "PERANTI GURU", "NAMA GURU PENYELARAS ICT", "GRED", "EMAIL NO TELEFON", "STATUS", "NAMA PTIS SELIAAN", "N0.TELEFON", "EMAIL"];
+        lastIdxMap = {
+          timestamp: 0, bil: 1, ppd: 2, kodSekolah: 3, namaSekolah: 4, pengurusan: 5, pengajaran: 6, perantiGuru: 7, penyelarasIct: 8, gred: 9, emailNoTelefon: 10, status: 11, ptisSeliaan: 12, noTelefon: 13, email: 14
+        };
+        lastRowCount = originalData.length;
+
+        document.getElementById('status-text').innerText = "LUAR TALIAN (SIMULASI)";
+        document.getElementById('status-text').className = "font-bold text-amber-500 animate-pulse";
+        document.getElementById('status-led').className = "relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500 status-blink";
+        document.getElementById('fallback-warning').classList.remove('hidden');
+      }
+
+      // Populate filters & refresh UI
+      populateFilterMenus();
+      applyFilters();
+    }
+
+    // Open Manual Import disk modal
+    function openImportModal() {
+      playSound('success');
+      const modal = document.getElementById('import-modal');
+      const card = document.getElementById('import-card');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        card.classList.remove('scale-95');
+        card.classList.add('scale-100');
+      }, 50);
+    }
+
+    // Close Manual Import disk modal
+    function closeImportModal() {
+      playSound('click');
+      const modal = document.getElementById('import-modal');
+      const card = document.getElementById('import-card');
+      card.classList.remove('scale-100');
+      card.classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 150);
+    }
+
+    function clearImportText() {
+      playSound('click');
+      document.getElementById('raw-csv-input').value = '';
+    }
+
+    // Process and override manual copy-pasted text data bypassing browser CORS
+    function processManualImport() {
+      const rawText = document.getElementById('raw-csv-input').value.trim();
+      if (!rawText) {
+        alert("Sila tampalkan teks CSV atau tab-spaced data terlebih dahulu!");
+        return;
+      }
+
+      try {
+        const rows = parseCSV(rawText);
+        if (rows.length < 2) {
+          alert("Data tidak sah! Sila pastikan baris pertama mengandungi tajuk (header) lajur.");
+          return;
+        }
+
+        const parsedData = buildCleanDatasetFromRows(rows);
+        if (parsedData.length === 0) {
+          alert("Gagal mengekstrak sebarang rekod sekolah dari data yang diberikan.");
+          return;
+        }
+
+        originalData = parsedData;
+        dataSource = "IMPORT MANUAL (OVERRIDE)";
+
+        document.getElementById('status-text').innerText = "IMPORT MANUAL (OVERRIDE)";
+        document.getElementById('status-text').className = "font-bold text-cyan-400";
+        document.getElementById('status-led').className = "relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-400";
+        document.getElementById('fallback-warning').classList.add('hidden');
+        
+        playSound('success');
+        closeImportModal();
+        
+        populateFilterMenus();
+        applyFilters();
+
+      } catch (err) {
+        console.error("Gagal membaca CSV import.", err);
+        alert("Isu parsing dikesan. Sila semak format fail tamparan anda.");
+      }
+    }
+
+    // Populate drop down options dynamically based on CSV content
+    function populateFilterMenus() {
+      const ppds = new Set();
+      const ptiss = new Set();
+
+      originalData.forEach(item => {
+        if (item.ppd) ppds.add(item.ppd);
+        if (item.ptisSeliaan) ptiss.add(item.ptisSeliaan);
+      });
+
+      // Populate PPD selector options
+      const ppdSelect = document.getElementById('filter-ppd');
+      ppdSelect.innerHTML = '<option value="ALL" class="bg-slate-900 text-slate-200">SEMUA PPD</option>';
+      Array.from(ppds).sort().forEach(ppd => {
+        ppdSelect.innerHTML += `<option value="${ppd}" class="bg-slate-900 text-slate-200">${ppd}</option>`;
+      });
+
+      // Populate PTIS selector options
+      const ptisSelect = document.getElementById('filter-ptis');
+      ptisSelect.innerHTML = '<option value="ALL" class="bg-slate-900 text-slate-200">SEMUA PENYELIA PTIS</option>';
+      Array.from(ptiss).sort().forEach(ptis => {
+        ptisSelect.innerHTML += `<option value="${ptis}" class="bg-slate-900 text-slate-200">${ptis}</option>`;
+      });
+    }
+
+    function applyFilters() {
+      playSound('click');
+      const valPengurusan = document.getElementById('filter-pengurusan').value;
+      const valPengajaran = document.getElementById('filter-pengajaran').value;
+      const valPeranti = document.getElementById('filter-peranti').value;
+      const valPtis = document.getElementById('filter-ptis').value;
+      const valPpd = document.getElementById('filter-ppd').value;
+      const searchVal = document.getElementById('search-bar').value.toLowerCase().trim();
+
+      filteredData = originalData.filter(item => {
+        // Pengurusan Dan Pentadbiran filter
+        if (valPengurusan === 'HAS' && item.pengurusan <= 0) return false;
+        if (valPengurusan === 'NONE' && item.pengurusan > 0) return false;
+
+        // Pengajaran Dan Pentadbiran filter
+        if (valPengajaran === 'HAS' && item.pengajaran <= 0) return false;
+        if (valPengajaran === 'NONE' && item.pengajaran > 0) return false;
+
+        // Peranti Guru filter
+        if (valPeranti === 'HAS' && item.perantiGuru <= 0) return false;
+        if (valPeranti === 'NONE' && item.perantiGuru > 0) return false;
+
+        // PTIS Seliaan match
+        if (valPtis !== 'ALL' && item.ptisSeliaan !== valPtis) return false;
+
+        // PPD match
+        if (valPpd !== 'ALL' && item.ppd !== valPpd) return false;
+
+        // Search text matching
+        if (searchVal) {
+          const combinedSearch = `${item.namaSekolah} ${item.kodSekolah} ${item.penyelarasIct} ${item.ptisSeliaan} ${item.ppd}`.toLowerCase();
+          if (!combinedSearch.includes(searchVal)) return false;
+        }
+
+        return true;
+      });
+
+      currentPage = 1; // reset page
+      updateDashboardUI();
+    }
+
+    // Reset console dials
+    function resetFilters() {
+      playSound('switch');
+      document.getElementById('filter-pengurusan').value = 'ALL';
+      document.getElementById('filter-pengajaran').value = 'ALL';
+      document.getElementById('filter-peranti').value = 'ALL';
+      document.getElementById('filter-ptis').value = 'ALL';
+      document.getElementById('filter-ppd').value = 'ALL';
+      document.getElementById('search-bar').value = '';
+      applyFilters();
+    }
+
+    // Update Console LED meters & Table metrics
+    function updateDashboardUI() {
+      let sumPengurusan = 0;
+      let sumPengajaran = 0;
+      let sumPeranti = 0;
+
+      let presentPengurusan = 0;
+      let presentPengajaran = 0;
+      let presentPeranti = 0;
+
+      filteredData.forEach(item => {
+        sumPengurusan += item.pengurusan;
+        sumPengajaran += item.pengajaran;
+        sumPeranti += item.perantiGuru;
+
+        if (item.pengurusan > 0) presentPengurusan++;
+        if (item.pengajaran > 0) presentPengajaran++;
+        if (item.perantiGuru > 0) presentPeranti++;
+      });
+
+      // Update Scorecard digital panel displays
+      document.getElementById('scorecard-pengurusan').innerText = sumPengurusan.toLocaleString();
+      document.getElementById('scorecard-pengajaran').innerText = sumPengajaran.toLocaleString();
+      document.getElementById('scorecard-peranti').innerText = sumPeranti.toLocaleString();
+
+      const totalSchools = filteredData.length || 1;
+      document.getElementById('pengurusan-pct').innerText = `${Math.round((presentPengurusan / totalSchools) * 100)}% Berperanti`;
+      document.getElementById('pengajaran-pct').innerText = `${Math.round((presentPengajaran / totalSchools) * 100)}% Berperanti`;
+      document.getElementById('peranti-pct').innerText = `${Math.round((presentPeranti / totalSchools) * 100)}% Berperanti`;
+
+      document.getElementById('filtered-count').innerText = filteredData.length;
+      document.getElementById('total-count').innerText = originalData.length;
+
+      // Render Ledger tables and charts
+      renderTable();
+      updateAllCharts();
+    }
+
+    // Draw school rows in the tabular view
+    function renderTable() {
+      const tbody = document.getElementById('schools-tbody');
+      tbody.innerHTML = '';
+
+      const totalItems = filteredData.length;
+      document.getElementById('pag-total').innerText = totalItems;
+
+      if (totalItems === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="10" class="p-8 text-center text-slate-500 font-mono">Tiada sekolah ditemui menyamai kombinasi penapis anda.</td>
+          </tr>
+        `;
+        document.getElementById('pag-start').innerText = '0';
+        document.getElementById('pag-end').innerText = '0';
+        document.getElementById('current-page').innerText = 'HALAMAN 1/1';
+        return;
+      }
+
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+
+      document.getElementById('pag-start').innerText = startIndex + 1;
+      document.getElementById('pag-end').innerText = endIndex;
+      document.getElementById('current-page').innerText = `HALAMAN ${currentPage}/${totalPages}`;
+
+      for (let i = startIndex; i < endIndex; i++) {
+        const item = filteredData[i];
+        const row = document.createElement('tr');
+        row.className = 'hover:bg-indigo-500/10 transition-colors border-b border-slate-800/40 cursor-pointer';
+        row.onclick = () => openSchoolModal(item);
+
+        row.innerHTML = `
+          <td class="p-3 text-center font-mono text-slate-500">${i + 1}</td>
+          <td class="p-3 font-mono font-bold text-slate-200">${item.kodSekolah}</td>
+          <td class="p-3 font-bold text-slate-100 max-w-[200px] truncate" title="${item.namaSekolah}">${item.namaSekolah}</td>
+          <td class="p-3 text-center"><span class="px-2.5 py-0.5 rounded bg-slate-900 text-slate-300 font-mono text-[10px] font-semibold">${item.ppd}</span></td>
+          <td class="p-3 text-center font-mono font-bold text-amber-500 text-xs">${item.pengurusan}</td>
+          <td class="p-3 text-center font-mono font-bold text-emerald-400 text-xs">${item.pengajaran}</td>
+          <td class="p-3 text-center font-mono font-bold text-cyan-400 text-xs">${item.perantiGuru}</td>
+          <td class="p-3 font-mono text-slate-400 truncate max-w-[140px]" title="${item.penyelarasIct}">${item.penyelarasIct}</td>
+          <td class="p-3 text-center"><span class="font-bold text-indigo-400 text-xs font-mono">${item.gred}</span></td>
+          <td class="p-3 text-center" onclick="event.stopPropagation();">
+            <button onclick="openSchoolModalById('${item.kodSekolah}')" class="skeuo-btn px-2.5 py-1.5 text-[9px] font-bold text-indigo-400 hover:text-indigo-300">
+              <i class="fa-solid fa-folder-open mr-1"></i> DOSIER
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      }
+    }
+
+    // Undur halaman lejar
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        playSound('click');
+        renderTable();
+      }
+    }
+
+    // Maju halaman lejar
+    function nextPage() {
+      const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        playSound('click');
+        renderTable();
+      }
+    }
+
+    // Modal Control: Open dossier
+    function openSchoolModal(school) {
+      playSound('success');
+      
+      document.getElementById('modal-title').innerText = school.namaSekolah;
+      document.getElementById('modal-code').innerText = school.kodSekolah;
+      document.getElementById('modal-ppd').innerText = school.ppd;
+      document.getElementById('modal-gred').innerText = `SEKOLAH GRED ${school.gred}`;
+      document.getElementById('modal-status').innerText = school.status;
+      document.getElementById('modal-ptis').innerText = school.ptisSeliaan;
+      document.getElementById('modal-coordinator').innerText = school.penyelarasIct;
+      document.getElementById('modal-phone').innerText = school.noTelefon;
+      document.getElementById('modal-email').innerText = school.email;
+
+      // Update communication hyperlinks
+      document.getElementById('modal-phone-btn').href = `tel:${school.noTelefon}`;
+      document.getElementById('modal-email-btn').href = `mailto:${school.email}`;
+
+      // Progress bars
+      document.getElementById('modal-val-pengurusan').innerText = `${school.pengurusan} UNIT`;
+      document.getElementById('modal-val-pengajaran').innerText = `${school.pengajaran} UNIT`;
+      document.getElementById('modal-val-peranti').innerText = `${school.perantiGuru} UNIT`;
+
+      // Visual maximum scale calculation relative to 40 peranti
+      const scaleLimit = 40;
+      const pengurusanPercent = Math.min((school.pengurusan / scaleLimit) * 100, 100);
+      const pengajaranPercent = Math.min((school.pengajaran / scaleLimit) * 100, 100);
+      const perantiPercent = Math.min((school.perantiGuru / scaleLimit) * 100, 100);
+
+      document.getElementById('modal-progress-pengurusan').style.width = `${pengurusanPercent}%`;
+      document.getElementById('modal-progress-pengajaran').style.width = `${pengajaranPercent}%`;
+      document.getElementById('modal-progress-peranti').style.width = `${perantiPercent}%`;
+
+      const modal = document.getElementById('school-modal');
+      const card = document.getElementById('modal-card');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        card.classList.remove('scale-95');
+        card.classList.add('scale-100');
+      }, 50);
+    }
+
+    // Open Modal matching school primary key code
+    function openSchoolModalById(code) {
+      const match = originalData.find(item => item.kodSekolah === code);
+      if (match) openSchoolModal(match);
+    }
+
+    // Modal Close action
+    function closeModal() {
+      playSound('click');
+      const modal = document.getElementById('school-modal');
+      const card = document.getElementById('modal-card');
+      card.classList.remove('scale-100');
+      card.classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 150);
+    }
+
+    // Open data column diagnostic board
+    function openDiagnosticModal() {
+      playSound('success');
+      populateDiagnostics();
+      const modal = document.getElementById('diagnostic-modal');
+      const card = document.getElementById('diagnostic-card');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        card.classList.remove('scale-95');
+        card.classList.add('scale-100');
+      }, 50);
+    }
+
+    // Close data column diagnostic board
+    function closeDiagnosticModal() {
+      playSound('click');
+      const modal = document.getElementById('diagnostic-modal');
+      const card = document.getElementById('diagnostic-card');
+      card.classList.remove('scale-100');
+      card.classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 150);
+    }
+
+    // Populate data diagnostics view dynamically
+    function populateDiagnostics() {
+      document.getElementById('diag-source').innerText = dataSource;
+      if (dataSource.includes("LIVE")) {
+        document.getElementById('diag-source').className = "font-bold text-emerald-400";
+      } else if (dataSource.includes("IMPORT")) {
+        document.getElementById('diag-source').className = "font-bold text-cyan-400";
+      } else {
+        document.getElementById('diag-source').className = "font-bold text-amber-500 animate-pulse";
+      }
+      document.getElementById('diag-col-count').innerText = lastRawHeaders.length;
+      document.getElementById('diag-row-count').innerText = lastRowCount;
+
+      const listContainer = document.getElementById('diag-mapping-list');
+      listContainer.innerHTML = '';
+
+      const expectedFields = [
+        { key: 'timestamp', label: 'Timestamp' },
+        { key: 'bil', label: 'BIL' },
+        { key: 'ppd', label: 'PPD' },
+        { key: 'kodSekolah', label: 'KOD SEKOLAH' },
+        { key: 'namaSekolah', label: 'NAMA SEKOLAH' },
+        { key: 'pengurusan', label: 'PENGURUSAN DAN PENTADBIRAN' },
+        { key: 'pengajaran', label: 'PENGAJARAN DAN PENTADBIRAN' },
+        { key: 'perantiGuru', label: 'PERANTI GURU' },
+        { key: 'penyelarasIct', label: 'GURU PENYELARAS ICT' },
+        { key: 'gred', label: 'GRED' },
+        { key: 'emailNoTelefon', label: 'EMAIL NO TELEFON' },
+        { key: 'status', label: 'STATUS' },
+        { key: 'ptisSeliaan', label: 'NAMA PTIS SELIAAN' },
+        { key: 'noTelefon', label: 'NO. TELEFON (PTIS)' },
+        { key: 'email', label: 'EMAIL (PTIS)' }
+      ];
+
+      expectedFields.forEach(f => {
+        const indexMapped = lastIdxMap[f.key];
+        const isMatched = indexMapped !== undefined && indexMapped !== -1 && indexMapped < lastRawHeaders.length;
+        const mappedName = isMatched ? lastRawHeaders[indexMapped] : "TIDAK DIJUMPI";
+
+        const itemDiv = document.createElement('div');
+        itemDiv.className = `flex justify-between items-center py-1 border-b border-slate-800/50 ${isMatched ? 'text-slate-300' : 'text-red-400 font-bold'}`;
+        itemDiv.innerHTML = `
+          <span class="truncate max-w-[180px]">${f.label}:</span>
+          <span class="text-[10px] font-mono ${isMatched ? 'text-emerald-400 bg-emerald-500/10' : 'text-red-400 bg-red-500/10'} px-2 py-0.5 rounded truncate max-w-[200px]">
+            ${isMatched ? `[Lajur ${indexMapped + 1}] ${mappedName}` : 'TIDAK DIKESAN'}
+          </span>
+        `;
+        listContainer.appendChild(itemDiv);
+      });
+    }
+
+    // Render Charts using optimized colors relative to Dark / Light states
+    function updateAllCharts() {
+      const isDark = document.documentElement.classList.contains('dark');
+      const textColor = isDark ? '#94a3b8' : '#334155';
+      const gridColor = isDark ? 'rgba(148, 163, 184, 0.08)' : 'rgba(51, 65, 85, 0.08)';
+
+      // --- Chart 1: Agihan Peranti mengikut PPD ---
+      const ppdSummary = {};
+      filteredData.forEach(item => {
+        if (!ppdSummary[item.ppd]) {
+          ppdSummary[item.ppd] = { pengurusan: 0, pengajaran: 0, peranti: 0 };
+        }
+        ppdSummary[item.ppd].pengurusan += item.pengurusan;
+        ppdSummary[item.ppd].pengajaran += item.pengajaran;
+        ppdSummary[item.ppd].peranti += item.perantiGuru;
+      });
+
+      const ppdLabels = Object.keys(ppdSummary).sort();
+      const datasetPengurusan = ppdLabels.map(l => ppdSummary[l].pengurusan);
+      const datasetPengajaran = ppdLabels.map(l => ppdSummary[l].pengajaran);
+      const datasetPeranti = ppdLabels.map(l => ppdSummary[l].peranti);
+
+      if (chartDevicesPpdRef) chartDevicesPpdRef.destroy();
+
+      const ctxPpd = document.getElementById('chart-devices-ppd').getContext('2d');
+      chartDevicesPpdRef = new Chart(ctxPpd, {
+        type: 'bar',
+        data: {
+          labels: ppdLabels,
+          datasets: [
+            {
+              label: 'Pengurusan & Pentadbiran',
+              data: datasetPengurusan,
+              backgroundColor: 'rgba(245, 158, 11, 0.85)',
+              borderColor: '#f59e0b',
+              borderWidth: 1.5,
+              borderRadius: 5
+            },
+            {
+              label: 'Pengajaran & Pentadbiran',
+              data: datasetPengajaran,
+              backgroundColor: 'rgba(52, 211, 153, 0.85)',
+              borderColor: '#34d399',
+              borderWidth: 1.5,
+              borderRadius: 5
+            },
+            {
+              label: 'Peranti Guru',
+              data: datasetPeranti,
+              backgroundColor: 'rgba(34, 211, 238, 0.85)',
+              borderColor: '#22d3ee',
+              borderWidth: 1.5,
+              borderRadius: 5
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: { color: textColor, font: { family: 'Share Tech Mono', size: 9 } }
+            },
+            tooltip: {
+              backgroundColor: isDark ? '#151a21' : '#ffffff',
+              titleColor: isDark ? '#ffffff' : '#0f172a',
+              bodyColor: isDark ? '#cbd5e1' : '#475569',
+              borderColor: '#6366f1',
+              borderWidth: 1
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: gridColor },
+              ticks: { color: textColor, font: { family: 'Share Tech Mono' } }
+            },
+            y: {
+              grid: { color: gridColor },
+              ticks: { color: textColor, font: { family: 'Share Tech Mono' } }
+            }
+          }
+        }
+      });
+
+      // --- Chart 2: Doughnut Profiling Gred ---
+      const gredCounts = {};
+      filteredData.forEach(item => {
+        const g = item.gred || 'TIADA';
+        gredCounts[g] = (gredCounts[g] || 0) + 1;
+      });
+
+      const gredLabels = Object.keys(gredCounts).sort();
+      const gredValues = gredLabels.map(l => gredCounts[l]);
+
+      if (chartGredRef) chartGredRef.destroy();
+
+      const ctxGred = document.getElementById('chart-gred').getContext('2d');
+      chartGredRef = new Chart(ctxGred, {
+        type: 'doughnut',
+        data: {
+          labels: gredLabels,
+          datasets: [{
+            data: gredValues,
+            backgroundColor: [
+              'rgba(99, 102, 241, 0.85)',
+              'rgba(168, 85, 247, 0.85)',
+              'rgba(236, 72, 153, 0.85)',
+              'rgba(20, 184, 166, 0.85)',
+              'rgba(148, 163, 184, 0.85)'
+            ],
+            borderWidth: isDark ? 2 : 1.5,
+            borderColor: isDark ? '#151a21' : '#ffffff',
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 10 } }
+            }
+          },
+          cutout: '70%'
+        }
+      });
+
+      // --- Chart 3: PTIS workload portfolio ---
+      const ptisCounts = {};
+      filteredData.forEach(item => {
+        // Shorten long name representing PTIS
+        const ptisShort = item.ptisSeliaan ? item.ptisSeliaan.split(' ')[0] : 'TIADA';
+        ptisCounts[ptisShort] = (ptisCounts[ptisShort] || 0) + 1;
+      });
+
+      const ptisLabels = Object.keys(ptisCounts).sort();
+      const ptisValues = ptisLabels.map(l => ptisCounts[l]);
+
+      if (chartPtisRef) chartPtisRef.destroy();
+
+      const ctxPtis = document.getElementById('chart-ptis-workload').getContext('2d');
+      chartPtisRef = new Chart(ctxPtis, {
+        type: 'radar',
+        data: {
+          labels: ptisLabels,
+          datasets: [{
+            label: 'Bil Sekolah Diselia',
+            data: ptisValues,
+            backgroundColor: 'rgba(99, 102, 241, 0.3)',
+            borderColor: '#6366f1',
+            pointBackgroundColor: '#818cf8',
+            pointBorderColor: '#fff',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            r: {
+              grid: { color: gridColor },
+              angleLines: { color: gridColor },
+              pointLabels: { color: textColor, font: { family: 'Plus Jakarta Sans', size: 9 } },
+              ticks: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    // CSV Document exporter matching updated headers and specifications
+    function exportToCSV() {
+      playSound('success');
+      if (filteredData.length === 0) {
+        alert("Tiada data ditemui untuk dimuat turun.");
+        return;
+      }
+
+      // Exact user requested headers
+      const headers = [
+        "BIL", "KOD SEKOLAH", "NAMA SEKOLAH", "PPD", "PENGURUSAN DAN PENTADBIRAN", 
+        "PENGAJARAN DAN PENTADBIRAN", "PERANTI GURU", "NAMA GURU PENYELARAS ICT", "GRED", 
+        "EMAIL NO TELEFON", "STATUS", "NAMA PTIS SELIAAN", "N0.TELEFON", "EMAIL"
+      ];
+
+      // Build CSV UTF-8 string content
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // Support Malay Special Characters inside Excel
+      csvContent += headers.join(",") + "\n";
+
+      filteredData.forEach((item, index) => {
+        const row = [
+          index + 1,
+          `"${item.kodSekolah}"`,
+          `"${item.namaSekolah.replace(/"/g, '""')}"`,
+          `"${item.ppd}"`,
+          item.pengurusan,
+          item.pengajaran,
+          item.perantiGuru,
+          `"${item.penyelarasIct.replace(/"/g, '""')}"`,
+          `"${item.gred}"`,
+          `"${item.emailNoTelefon.replace(/"/g, '""')}"`,
+          `"${item.status}"`,
+          `"${item.ptisSeliaan.replace(/"/g, '""')}"`,
+          `"${item.noTelefon}"`,
+          `"${item.email}"`
+        ];
+        csvContent += row.join(",") + "\n";
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      
+      const today = new Date();
+      const filename = `Projek_Sewaan_Kuantan_${today.getFullYear()}_${today.getMonth()+1}_${today.getDate()}.csv`;
+      link.setAttribute("download", filename);
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
